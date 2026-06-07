@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Pipeline">
+<title>Pipeline AI</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg: #F2F2F7;
+  --surface: #FFFFFF;
+  --surface2: #F2F2F7;
+  --grouped: #EFEFF4;
+  --border: rgba(60,60,67,0.12);
+  --separator: rgba(60,60,67,0.08);
+  --text: #000000;
+  --text2: #3C3C43;
+  --text3: rgba(60,60,67,0.6);
+  --text4: rgba(60,60,67,0.3);
+  --blue: #007AFF;
+  --blue-light: rgba(0,122,255,0.1);
+  --green: #34C759;
+  --red: #FF3B30;
+  --orange: #FF9500;
+  --purple: #AF52DE;
+  --teal: #5AC8FA;
+  --indigo: #5856D6;
+  --fill: rgba(120,120,128,0.12);
+  --fill2: rgba(120,120,128,0.08);
+  --safe-top: env(safe-area-inset-top, 44px);
+  --safe-bot: env(safe-area-inset-bottom, 34px);
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { height:100%; overflow:hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ========== NAVIGATION BAR ========== */
+.nav-bar {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  padding-top: var(--safe-top);
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 0.5px solid var(--border);
+}
+.nav-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+}
+.nav-title {
+  font-size: 17px; font-weight: 600; color: var(--text);
+  letter-spacing: -0.4px;
+}
+.nav-btn {
+  background: var(--blue-light);
+  color: var(--blue);
+  border: none;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 14px; font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex; align-items: center; gap: 5px;
+  letter-spacing: -0.2px;
+}
+.nav-btn:active { transform: scale(0.95); opacity: 0.8; }
+.nav-btn.key-set { background: rgba(52,199,89,0.12); color: var(--green); }
+
+/* ========== SCROLL BODY ========== */
+.scroll-body {
+  position: fixed; top:0; left:0; right:0; bottom:0;
+  overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(var(--safe-bot) + 84px);
+  scroll-behavior: smooth;
+}
+.scroll-inner {
+  padding-top: calc(var(--safe-top) + 64px);
+  padding-left: 16px; padding-right: 16px;
+}
+
+/* ========== PAGES ========== */
+.page { display: none; animation: pageFade 0.25s ease; }
+.page.active { display: block; }
+@keyframes pageFade { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+/* ========== iOS SECTION GROUPS ========== */
+.section-label {
+  font-size: 13px; font-weight: 500;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 4px;
+  margin: 24px 0 8px;
+}
+.section-label:first-child { margin-top: 12px; }
+
+.ios-group {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.ios-row {
+  display: flex; align-items: center;
+  padding: 14px 16px;
+  border-bottom: 0.5px solid var(--separator);
+  gap: 12px;
+  transition: background 0.1s;
+}
+.ios-row:last-child { border-bottom: none; }
+.ios-row:active { background: var(--fill2); }
+.ios-row-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.ios-row-content { flex: 1; min-width: 0; }
+.ios-row-title { font-size: 16px; font-weight: 400; color: var(--text); letter-spacing: -0.3px; }
+.ios-row-sub { font-size: 13px; color: var(--text3); margin-top: 1px; }
+.ios-row-right { color: var(--text4); font-size: 14px; }
+
+/* ========== INPUTS ========== */
+.input-group {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.input-field {
+  width: 100%; border: none; outline: none;
+  background: transparent;
+  font-family: inherit; font-size: 16px;
+  color: var(--text); padding: 14px 16px;
+  letter-spacing: -0.3px;
+  resize: none;
+}
+.input-field::placeholder { color: var(--text4); }
+.input-divider { height: 0.5px; background: var(--separator); margin: 0 16px; }
+
+/* ========== CHIP SELECTOR ========== */
+.chip-scroll {
+  display: flex; gap: 8px;
+  overflow-x: auto; overflow-y: hidden;
+  padding: 12px 16px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  margin-bottom: 8px;
+}
+.chip-scroll::-webkit-scrollbar { display: none; }
+
+.chip-grid {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  margin-bottom: 8px;
+}
+
+.chip {
+  padding: 7px 14px;
+  background: var(--fill);
+  border: none;
+  border-radius: 20px;
+  font-family: inherit;
+  font-size: 14px; font-weight: 400;
+  color: var(--text2);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  letter-spacing: -0.2px;
+}
+.chip:active { transform: scale(0.93); }
+.chip.selected {
+  background: var(--blue);
+  color: white;
+  transform: scale(1.0);
+  box-shadow: 0 2px 8px rgba(0,122,255,0.3);
+}
+.chip.multi.selected {
+  background: var(--purple);
+  box-shadow: 0 2px 8px rgba(175,82,222,0.3);
+}
+
+/* ========== GENERATE BUTTON ========== */
+.gen-btn-wrap { padding: 8px 0 16px; }
+.gen-btn {
+  width: 100%; padding: 16px;
+  background: var(--blue);
+  color: white; border: none;
+  border-radius: var(--radius-lg);
+  font-family: inherit;
+  font-size: 17px; font-weight: 600;
+  letter-spacing: -0.4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 14px rgba(0,122,255,0.35);
+}
+.gen-btn:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(0,122,255,0.2); }
+.gen-btn:disabled { background: var(--text4); box-shadow: none; cursor: not-allowed; transform: none; }
+
+/* ========== PROGRESS STEPS ========== */
+.progress-wrap {
+  display: none;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.progress-step {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 0.5px solid var(--separator);
+  transition: all 0.3s ease;
+}
+.progress-step:last-child { border-bottom: none; }
+.step-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--fill);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+.progress-step.active .step-dot {
+  background: rgba(0,122,255,0.12);
+  animation: pulse 1.5s ease infinite;
+}
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+.progress-step.done .step-dot { background: rgba(52,199,89,0.15); }
+.progress-step.error .step-dot { background: rgba(255,59,48,0.12); }
+.step-text { font-size: 15px; color: var(--text2); letter-spacing: -0.2px; }
+.progress-step.active .step-text { color: var(--blue); font-weight: 500; }
+.progress-step.done .step-text { color: var(--green); }
+.progress-step.error .step-text { color: var(--red); }
+
+/* ========== OUTPUT BLOCKS ========== */
+.out-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.out-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 0.5px solid var(--separator);
+}
+.out-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 600; color: var(--text);
+  letter-spacing: -0.3px;
+}
+.out-actions { display: flex; gap: 8px; }
+.action-btn {
+  padding: 6px 14px;
+  background: var(--fill);
+  border: none; border-radius: 20px;
+  font-family: inherit;
+  font-size: 13px; font-weight: 500;
+  color: var(--blue);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.action-btn:active { transform: scale(0.93); opacity: 0.7; }
+.action-btn.copied { color: var(--green); }
+.out-body {
+  padding: 14px 16px;
+  font-size: 14px; line-height: 1.7;
+  color: var(--text2);
+  white-space: pre-wrap; word-break: break-word;
+  max-height: 260px; overflow-y: auto;
+  letter-spacing: -0.1px;
+}
+.out-body.expanded { max-height: none; }
+.expand-row {
+  padding: 12px 16px;
+  border-top: 0.5px solid var(--separator);
+  text-align: center;
+  font-size: 14px; font-weight: 500; color: var(--blue);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.expand-row:active { background: var(--fill2); }
+
+/* ========== EMPTY STATE ========== */
+.empty {
+  text-align: center; padding: 60px 24px;
+}
+.empty-icon { font-size: 52px; margin-bottom: 16px; }
+.empty-title { font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 8px; letter-spacing: -0.5px; }
+.empty-sub { font-size: 15px; color: var(--text3); line-height: 1.5; letter-spacing: -0.2px; }
+
+/* ========== HISTORY ITEMS ========== */
+.history-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.history-card:active { transform: scale(0.98); background: var(--fill2); }
+.history-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--blue-light); color: var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.history-info { flex: 1; min-width: 0; }
+.history-topic { font-size: 15px; font-weight: 500; color: var(--text); letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.history-meta { font-size: 13px; color: var(--text3); margin-top: 2px; }
+.history-del { background: none; border: none; color: var(--text4); font-size: 18px; cursor: pointer; padding: 4px; transition: color 0.15s; }
+.history-del:active { color: var(--red); }
+
+/* ========== SETTINGS ========== */
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 0.5px solid var(--separator);
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-label { font-size: 16px; color: var(--text); letter-spacing: -0.3px; }
+.settings-value { font-size: 14px; color: var(--text3); }
+.settings-action {
+  padding: 6px 14px;
+  background: var(--fill);
+  border: none; border-radius: 20px;
+  font-family: inherit; font-size: 14px; font-weight: 500;
+  color: var(--blue); cursor: pointer;
+  transition: all 0.15s;
+}
+.settings-action:active { transform: scale(0.93); }
+.settings-action.danger { color: var(--red); }
+
+/* ========== BOTTOM TAB BAR ========== */
+.tab-bar {
+  position: fixed; bottom:0; left:0; right:0; z-index:100;
+  padding-bottom: var(--safe-bot);
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 0.5px solid var(--border);
+  display: flex;
+}
+.tab {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 3px;
+  padding: 10px 0 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tab:active { transform: scale(0.88); }
+.tab-icon { font-size: 22px; line-height: 1; transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1); }
+.tab-label { font-size: 10px; font-weight: 500; color: var(--text3); letter-spacing: 0.1px; }
+.tab.active .tab-label { color: var(--blue); }
+.tab.active .tab-icon { transform: scale(1.15); }
+
+/* ========== MODAL ========== */
+.modal-overlay {
+  position: fixed; inset:0; z-index:200;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(8px);
+  display: flex; align-items: flex-end;
+  transition: opacity 0.3s;
+}
+.modal-overlay.hidden { display: none; }
+.modal-sheet {
+  width: 100%;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: 8px 24px calc(var(--safe-bot) + 24px);
+  animation: slideUp 0.35s cubic-bezier(0.34,1.2,0.64,1);
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-handle {
+  width: 36px; height: 4px; border-radius: 2px;
+  background: var(--text4); margin: 0 auto 20px;
+}
+.modal-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 6px; letter-spacing: -0.5px; }
+.modal-sub { font-size: 15px; color: var(--text3); margin-bottom: 20px; line-height: 1.5; }
+.modal-input {
+  width: 100%; padding: 14px 16px;
+  background: var(--fill);
+  border: none; border-radius: var(--radius);
+  font-family: inherit; font-size: 16px; color: var(--text);
+  outline: none; margin-bottom: 12px;
+  transition: background 0.15s;
+}
+.modal-input:focus { background: var(--fill2); }
+.modal-save {
+  width: 100%; padding: 16px;
+  background: var(--blue); color: white; border: none;
+  border-radius: var(--radius-lg);
+  font-family: inherit; font-size: 17px; font-weight: 600;
+  cursor: pointer; margin-bottom: 10px;
+  transition: all 0.15s;
+  box-shadow: 0 4px 14px rgba(0,122,255,0.3);
+}
+.modal-save:active { transform: scale(0.97); }
+.modal-cancel {
+  width: 100%; padding: 14px;
+  background: none; border: none;
+  font-family: inherit; font-size: 17px; font-weight: 400;
+  color: var(--blue); cursor: pointer;
+}
+.modal-note { font-size: 13px; color: var(--text3); text-align: center; margin-top: 12px; line-height: 1.5; }
+
+/* ========== API SELECTOR ========== */
+.api-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 12px;
+  font-size: 12px; font-weight: 600;
+  background: rgba(52,199,89,0.12); color: var(--green);
+}
+
+/* workflow steps */
+.workflow-step {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 16px; border-bottom: 0.5px solid var(--separator);
+}
+.workflow-step:last-child { border-bottom: none; }
+.step-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--blue-light); color: var(--blue);
+  font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.step-info-title { font-size: 15px; font-weight: 500; color: var(--text); letter-spacing: -0.2px; }
+.step-info-sub { font-size: 13px; color: var(--text3); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- NAV BAR -->
+<div class="nav-bar">
+  <div class="nav-inner">
+    <div class="nav-title">🎬 Pipeline AI</div>
+    <button class="nav-btn" id="keyNavBtn" onclick="showModal()">🔑 API Key</button>
+  </div>
+</div>
+
+<!-- MODAL (bottom sheet) -->
+<div class="modal-overlay hidden" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Gemini API Key</div>
+    <div class="modal-sub">Free key from Google AI Studio. No credit card needed.</div>
+    <input class="modal-input" type="password" id="keyInput" placeholder="AIza..." />
+    <button class="modal-save" onclick="saveKey()">Save Key</button>
+    <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+    <div class="modal-note">Get your free key at aistudio.google.com → Get API Key<br>Stored on your device only. Never shared.</div>
+  </div>
+</div>
+
+<!-- SCROLL BODY -->
+<div class="scroll-body" id="scrollBody">
+<div class="scroll-inner">
+
+  <!-- ====== PAGE: GENERATE ====== -->
+  <div class="page active" id="page-generate">
+
+    <div class="section-label">Content Brief</div>
+    <div class="input-group">
+      <textarea class="input-field" id="topic" rows="3" placeholder="Enter your video topic or idea..."></textarea>
+      <div class="input-divider"></div>
+      <input class="input-field" type="text" id="audience" placeholder="Target audience (optional)..." />
+    </div>
+
+    <div class="section-label">Niche</div>
+    <div class="chip-grid" id="nicheGroup">
+      <div class="chip selected" onclick="solo(this,'nicheGroup')">True Crime</div>
+      <div class="chip" onclick="solo(this,'nicheGroup')">Conspiracy / Dark History</div>
+      <div class="chip" onclick="solo(this,'nicheGroup')">Finance / Wealth</div>
+      <div class="chip" onclick="solo(this,'nicheGroup')">Science / Space</div>
+      <div class="chip" onclick="solo(this,'nicheGroup')">Psychology / Mind</div>
+      <div class="chip" onclick="solo(this,'nicheGroup')">Mythology / Ancient</div>
+      <div class="chip" onclick="solo(this,'nicheGroup')">Technology / AI</div>
+      <div class="chip" onclick="solo(this,'nicheGroup')">Health / Biohacking</div>
+      <div class="chip" onclick="solo(this,'nicheGroup')">Motivational / Success</div>
+      <div class="chip" onclick="solo(this,'nicheGroup')">Football / Sports</div>
+      <div class="chip" onclick="solo(this,'nicheGroup')">Parenting / Family</div>
+      <div class="chip" onclick="solo(this,'nicheGroup')">Philosophy / Stoicism</div>
+      <div class="chip" onclick="solo(this,'nicheGroup')">Horror / Paranormal</div>
+      <div class="chip" onclick="solo(this,'nicheGroup')">Business / Entrepreneurship</div>
+      <div class="chip" onclick="solo(this,'nicheGroup')">Wildlife / Nature</div>
+      <div class="chip" onclick="solo(this,'nicheGroup')">General</div>
+    </div>
+
+    <div class="section-label">Format</div>
+    <div class="chip-scroll" id="formatGroup">
+      <div class="chip selected" onclick="solo(this,'formatGroup')">Long-form (8–15 min)</div>
+      <div class="chip" onclick="solo(this,'formatGroup')">Short (60 sec)</div>
+      <div class="chip" onclick="solo(this,'formatGroup')">Both Formats</div>
+      <div class="chip" onclick="solo(this,'formatGroup')">Documentary (20+ min)</div>
+      <div class="chip" onclick="solo(this,'formatGroup')">Listicle Top 10</div>
+      <div class="chip" onclick="solo(this,'formatGroup')">Story Narrative</div>
+      <div class="chip" onclick="solo(this,'formatGroup')">Explainer</div>
+    </div>
+
+    <div class="section-label">Voice Tone</div>
+    <div class="chip-scroll" id="toneGroup">
+      <div class="chip selected" onclick="solo(this,'toneGroup')">Dark / Mysterious</div>
+      <div class="chip" onclick="solo(this,'toneGroup')">Dramatic / Cinematic</div>
+      <div class="chip" onclick="solo(this,'toneGroup')">Educational / Calm</div>
+      <div class="chip" onclick="solo(this,'toneGroup')">Energetic / Hype</div>
+      <div class="chip" onclick="solo(this,'toneGroup')">Conversational</div>
+      <div class="chip" onclick="solo(this,'toneGroup')">Investigative</div>
+      <div class="chip" onclick="solo(this,'toneGroup')">Motivational</div>
+      <div class="chip" onclick="solo(this,'toneGroup')">Emotional / Heartfelt</div>
+      <div class="chip" onclick="solo(this,'toneGroup')">Whispery / ASMR</div>
+    </div>
+
+    <div class="section-label">Visual Style <span style="color:var(--purple);font-size:11px;font-weight:500;">· multi-select</span></div>
+    <div class="chip-grid" id="visualGroup">
+      <div class="chip multi selected" onclick="multi(this)">Dark Oil Painting</div>
+      <div class="chip multi" onclick="multi(this)">Realistic AI Photos</div>
+      <div class="chip multi" onclick="multi(this)">Cinematic Movie Stills</div>
+      <div class="chip multi" onclick="multi(this)">3D Render / CGI</div>
+      <div class="chip multi" onclick="multi(this)">Anime / Manga</div>
+      <div class="chip multi" onclick="multi(this)">Comic Book</div>
+      <div class="chip multi" onclick="multi(this)">Watercolor / Painterly</div>
+      <div class="chip multi" onclick="multi(this)">Vintage / Retro</div>
+      <div class="chip multi" onclick="multi(this)">Neon / Cyberpunk</div>
+      <div class="chip multi" onclick="multi(this)">Minimalist / Flat</div>
+      <div class="chip multi" onclick="multi(this)">Stickman / 2D</div>
+      <div class="chip multi" onclick="multi(this)">Fantasy / Concept Art</div>
+      <div class="chip multi" onclick="multi(this)">Dark Surrealism</div>
+    </div>
+
+    <div class="section-label">More Options</div>
+    <div class="ios-group">
+      <div style="padding:12px 16px 4px;">
+        <div style="font-size:12px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Hook Style</div>
+        <div class="chip-scroll" id="hookGroup" style="background:transparent;border-radius:0;padding:0 0 8px;margin:0;">
+          <div class="chip selected" onclick="solo(this,'hookGroup')">Question Hook</div>
+          <div class="chip" onclick="solo(this,'hookGroup')">Shocking Fact</div>
+          <div class="chip" onclick="solo(this,'hookGroup')">Story Hook</div>
+          <div class="chip" onclick="solo(this,'hookGroup')">Controversy</div>
+          <div class="chip" onclick="solo(this,'hookGroup')">Cliffhanger</div>
+        </div>
+      </div>
+      <div class="input-divider"></div>
+      <div style="padding:12px 16px 4px;">
+        <div style="font-size:12px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">AI Image Tool</div>
+        <div class="chip-scroll" id="aiToolGroup" style="background:transparent;border-radius:0;padding:0 0 8px;margin:0;">
+          <div class="chip selected" onclick="solo(this,'aiToolGroup')">Midjourney</div>
+          <div class="chip" onclick="solo(this,'aiToolGroup')">Leonardo.ai</div>
+          <div class="chip" onclick="solo(this,'aiToolGroup')">Adobe Firefly</div>
+          <div class="chip" onclick="solo(this,'aiToolGroup')">DALL-E</div>
+          <div class="chip" onclick="solo(this,'aiToolGroup')">Kling / Veo</div>
+        </div>
+      </div>
+      <div class="input-divider"></div>
+      <div style="padding:12px 16px 4px;">
+        <div style="font-size:12px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Image Count</div>
+        <div class="chip-scroll" id="imgGroup" style="background:transparent;border-radius:0;padding:0 0 8px;margin:0;">
+          <div class="chip" onclick="solo(this,'imgGroup')">6 prompts</div>
+          <div class="chip selected" onclick="solo(this,'imgGroup')">12 prompts</div>
+          <div class="chip" onclick="solo(this,'imgGroup')">20 prompts</div>
+          <div class="chip" onclick="solo(this,'imgGroup')">30 prompts</div>
+        </div>
+      </div>
+      <div class="input-divider"></div>
+      <div style="padding:12px 16px 12px;">
+        <div style="font-size:12px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Language</div>
+        <div class="chip-scroll" id="langGroup" style="background:transparent;border-radius:0;padding:0;margin:0;">
+          <div class="chip selected" onclick="solo(this,'langGroup')">English</div>
+          <div class="chip" onclick="solo(this,'langGroup')">Taglish</div>
+          <div class="chip" onclick="solo(this,'langGroup')">Filipino</div>
+          <div class="chip" onclick="solo(this,'langGroup')">Spanish</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gen-btn-wrap">
+      <button class="gen-btn" id="genBtn" onclick="runPipeline()">Generate Pipeline ✦</button>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-step" id="step1"><div class="step-dot">📌</div><div class="step-text" id="s1">Titles & Hook</div></div>
+      <div class="progress-step" id="step2"><div class="step-dot">📝</div><div class="step-text" id="s2">Full Script</div></div>
+      <div class="progress-step" id="step3"><div class="step-dot">🎨</div><div class="step-text" id="s3">Image Prompts</div></div>
+      <div class="progress-step" id="step4"><div class="step-dot">📊</div><div class="step-text" id="s4">Metadata</div></div>
+    </div>
+
+  </div><!-- end generate page -->
+
+  <!-- ====== PAGE: OUTPUT ====== -->
+  <div class="page" id="page-outputs">
+    <div id="outputsContainer">
+      <div class="empty">
+        <div class="empty-icon">🎬</div>
+        <div class="empty-title">No Output Yet</div>
+        <div class="empty-sub">Generate your first pipeline to see results here</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== PAGE: HISTORY ====== -->
+  <div class="page" id="page-history">
+    <div class="section-label">Recent Pipelines</div>
+    <div id="historyContainer">
+      <div class="empty">
+        <div class="empty-icon">📂</div>
+        <div class="empty-title">No History</div>
+        <div class="empty-sub">Your generated pipelines will appear here</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== PAGE: SETTINGS ====== -->
+  <div class="page" id="page-settings">
+    <div class="section-label">API Configuration</div>
+    <div class="ios-group">
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">Gemini API Key</div>
+          <div class="settings-value" id="keyStatusText">Not configured</div>
+        </div>
+        <button class="settings-action" onclick="showModal()">Change</button>
+      </div>
+      <div class="settings-row">
+        <div class="settings-label">Model</div>
+        <div class="api-badge">gemini-2.0-flash</div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-label">Cost</div>
+        <div class="settings-value">Free tier</div>
+      </div>
+    </div>
+
+    <div class="section-label">Storage</div>
+    <div class="ios-group">
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">Saved Pipelines</div>
+          <div class="settings-value" id="savedCountText">0 pipelines</div>
+        </div>
+        <button class="settings-action danger" onclick="clearAll()">Clear All</button>
+      </div>
+    </div>
+
+    <div class="section-label">Workflow Guide</div>
+    <div class="ios-group">
+      <div class="workflow-step">
+        <div class="step-num">1</div>
+        <div class="step-info"><div class="step-info-title">Generate Pipeline</div><div class="step-info-sub">Script + image prompts + metadata</div></div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num">2</div>
+        <div class="step-info"><div class="step-info-title">ElevenLabs</div><div class="step-info-sub">Paste script → download MP3 voiceover</div></div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num">3</div>
+        <div class="step-info"><div class="step-info-title">Midjourney / Leonardo</div><div class="step-info-sub">Generate images using the prompts</div></div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num">4</div>
+        <div class="step-info"><div class="step-info-title">CapCut</div><div class="step-info-sub">Assemble voice + visuals into final video</div></div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num">5</div>
+        <div class="step-info"><div class="step-info-title">YouTube Upload</div><div class="step-info-sub">Paste metadata — title, description, tags</div></div>
+      </div>
+    </div>
+
+    <div class="section-label">App Info</div>
+    <div class="ios-group">
+      <div class="settings-row">
+        <div class="settings-label">Version</div>
+        <div class="settings-value">2.0.0 · PWA</div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-label">Get Free API Key</div>
+        <div class="settings-value" style="color:var(--blue)">aistudio.google.com</div>
+      </div>
+    </div>
+
+  </div><!-- end settings -->
+
+</div><!-- scroll inner -->
+</div><!-- scroll body -->
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <div class="tab active" onclick="goTab('generate',this)">
+    <div class="tab-icon">✦</div>
+    <div class="tab-label">Generate</div>
+  </div>
+  <div class="tab" onclick="goTab('outputs',this)">
+    <div class="tab-icon">📄</div>
+    <div class="tab-label">Output</div>
+  </div>
+  <div class="tab" onclick="goTab('history',this)">
+    <div class="tab-icon">📂</div>
+    <div class="tab-label">History</div>
+  </div>
+  <div class="tab" onclick="goTab('settings',this)">
+    <div class="tab-icon">⚙️</div>
+    <div class="tab-label">Settings</div>
+  </div>
+</div>
+
+<script>
+// ---- TABS ----
+function goTab(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('scrollBody').scrollTop = 0;
+}
+
+// ---- CHIPS ----
+function solo(el, gid) {
+  document.querySelectorAll('#'+gid+' .chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function multi(el) {
+  el.classList.toggle('selected');
+  const grp = el.closest('.chip-grid') || el.closest('.chip-scroll');
+  if (!grp.querySelectorAll('.chip.selected').length) el.classList.add('selected');
+}
+function getSolo(gid) {
+  const el = document.querySelector('#'+gid+' .chip.selected');
+  return el ? el.textContent.trim() : '';
+}
+function getMulti(gid) {
+  return [...document.querySelectorAll('#'+gid+' .chip.selected')].map(c => c.textContent.trim()).join(', ');
+}
+
+// ---- MODAL ----
+function showModal() { document.getElementById('modalOverlay').classList.remove('hidden'); }
+function closeModal() { document.getElementById('modalOverlay').classList.add('hidden'); }
+function handleOverlayClick(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+function saveKey() {
+  const k = document.getElementById('keyInput').value.trim();
+  if (!k) { alert('Please enter your API key.'); return; }
+  localStorage.setItem('pp_gemini_key', k);
+  updateKeyUI();
+  closeModal();
+}
+function getKey() { return localStorage.getItem('pp_gemini_key'); }
+function updateKeyUI() {
+  const k = getKey();
+  const btn = document.getElementById('keyNavBtn');
+  if (k) {
+    btn.textContent = '✓ Key Set';
+    btn.classList.add('key-set');
+    document.getElementById('keyStatusText').textContent = '••••' + k.slice(-6);
+  } else {
+    btn.textContent = '🔑 API Key';
+    btn.classList.remove('key-set');
+    document.getElementById('keyStatusText').textContent = 'Not configured';
+  }
+}
+
+// ---- STEP UI ----
+function setStep(n, state, txt) {
+  const el = document.getElementById('step'+n);
+  el.className = 'progress-step ' + state;
+  if (txt) document.getElementById('s'+n).textContent = txt;
+}
+
+// ---- GEMINI API ----
+async function callGemini(prompt, maxTokens) {
+  const key = getKey();
+  if (!key) { showModal(); throw new Error('No API key'); }
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { maxOutputTokens: maxTokens, temperature: 0.85 }
+    })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || 'Gemini API error');
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+// ---- PIPELINE ----
+async function runPipeline() {
+  const topic = document.getElementById('topic').value.trim();
+  if (!topic) { alert('Please enter a video topic.'); return; }
+  if (!getKey()) { showModal(); return; }
+
+  const niche    = getSolo('nicheGroup');
+  const format   = getSolo('formatGroup');
+  const tone     = getSolo('toneGroup');
+  const visuals  = getMulti('visualGroup');
+  const lang     = getSolo('langGroup');
+  const imgCount = getSolo('imgGroup').replace(' prompts','');
+  const aiTool   = getSolo('aiToolGroup');
+  const hook     = getSolo('hookGroup');
+  const audience = document.getElementById('audience').value.trim() || 'general YouTube audience';
+
+  const ctx = `Topic: "${topic}" | Niche: ${niche} | Format: ${format} | Tone: ${tone} | Visuals: ${visuals} | Language: ${lang} | Audience: ${audience} | Hook: ${hook} | AI Tool: ${aiTool}`;
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  document.getElementById('progressWrap').style.display = 'block';
+  document.getElementById('scrollBody').scrollTop = document.getElementById('progressWrap').offsetTop;
+
+  const results = {};
+
+  try {
+    // Step 1
+    setStep(1,'active','Generating titles & hook...');
+    results.titleHook = await callGemini(`You are a YouTube content strategist for ${niche} content.\n${ctx}\n\nWrite:\n1. FIVE compelling YouTube titles (numbered, SEO-friendly, match ${tone} tone)\n2. OPENING HOOK — gripping first 45–60 seconds using ${hook} style. Use [PAUSE][WHISPER][BEAT] cues. Make it impossible to skip.\n\nWrite in ${lang}. Output only the titles and hook, no extra commentary.`, 1500);
+    setStep(1,'done','✓ Titles & Hook');
+
+    // Step 2
+    setStep(2,'active','Writing full script...');
+    const fmtInstr = format.includes('Both') ? 'Write TWO scripts: [LONG-FORM] (8–15 min with scene labels) then [SHORTS VERSION] (45–55 sec).'
+      : format.includes('Short') ? 'Write a tight 45–55 second script with hook, reveal, CTA.'
+      : format.includes('Documentary') ? 'Write 20+ min documentary script with ACT 1, ACT 2, ACT 3.'
+      : format.includes('Listicle') ? 'Write listicle script with hook + 7-10 numbered points + CTA.'
+      : 'Write complete script with [SCENE 1][SCENE 2]... labels, strong story arc, YouTube CTA.';
+    results.script = await callGemini(`You are a professional YouTube scriptwriter for ${niche}.\n${ctx}\n\n${fmtInstr}\n\nRequirements:\n- Tone: ${tone} throughout\n- Delivery cues: [PAUSE][WHISPER][DRAMATIC BEAT][SPEED UP]\n- Build tension toward climax\n- End with CTA (like, subscribe, comment)\n- Write in ${lang}\n\nWrite the complete script. Do not cut short.`, 8000);
+    setStep(2,'done','✓ Script Complete');
+
+    // Step 3
+    setStep(3,'active',`Creating ${imgCount} image prompts...`);
+    const styleGuide = visuals.includes('Oil Painting') ? 'dark oil painting, chiaroscuro lighting, gold and purple tones, dramatic shadows, painterly texture'
+      : visuals.includes('Realistic') ? 'photorealistic, cinematic lighting, ultra-detailed, 8K'
+      : visuals.includes('Cinematic') ? 'cinematic still, movie color grading, anamorphic lens'
+      : visuals.includes('3D') ? '3D render, octane render, hyperrealistic, cinematic depth of field'
+      : visuals.includes('Anime') ? 'anime illustration, detailed shading, expressive, vibrant'
+      : visuals.includes('Comic') ? 'comic book style, bold outlines, graphic novel, high contrast'
+      : visuals.includes('Watercolor') ? 'watercolor painting, soft edges, flowing washes, ethereal'
+      : visuals.includes('Vintage') ? 'vintage photograph, sepia tone, aged texture, nostalgic'
+      : visuals.includes('Neon') ? 'neon cyberpunk, glowing lights, dark city, vibrant colors'
+      : visuals.includes('Stickman') ? '2D stickman animation, simple clean lines, flat colors'
+      : visuals.includes('Fantasy') ? 'fantasy concept art, epic scale, dramatic lighting'
+      : visuals.includes('Surrealism') ? 'dark surrealist art, dreamlike impossible scenes, symbolic'
+      : 'cinematic illustration, dramatic lighting, high detail';
+    const toolFmt = aiTool.includes('Midjourney') ? 'End each prompt with "--ar 16:9 --style raw --q 2"'
+      : aiTool.includes('Leonardo') ? 'Keep each under 200 chars. Include quality modifiers.'
+      : aiTool.includes('Firefly') ? 'Natural language. Mention mood and lighting clearly.'
+      : 'Clear descriptive sentences. Mention art style explicitly.';
+    results.images = await callGemini(`You are an AI art director for ${niche} YouTube.\n${ctx}\n\nGenerate exactly ${imgCount} image prompts covering the full video arc.\n\nStyle: ${styleGuide}\n${toolFmt}\n\nFormat:\n[Scene X — Title]\nPrompt: [detailed prompt]\nMood: [1-2 words]\n\nEach must be unique. Be specific: subject, environment, lighting, angle, color palette, atmosphere.`, 5000);
+    setStep(3,'done',`✓ ${imgCount} Image Prompts`);
+
+    // Step 4
+    setStep(4,'active','Building metadata...');
+    results.metadata = await callGemini(`You are a YouTube SEO specialist for ${niche}.\n${ctx}\n\nGenerate:\n\nBEST TITLE: (strongest single title)\n\nDESCRIPTION: (250 words, ${tone} tone, natural keywords, [CHAPTERS] placeholder, subscribe CTA)\n\nTAGS: (30 tags, comma-separated)\n\nCHAPTERS:\n0:00 - Intro\n[continue with timestamps]\n\nTHUMBNAIL:\n- Subject:\n- Background:\n- Text overlay (max 4 words):\n- Color mood:\n\nPINNED COMMENT: (engagement question)\n\nTWEET/X: (max 280 chars)\n\nWrite in ${lang} where applicable.`, 3000);
+    setStep(4,'done','✓ Metadata Complete');
+
+    // Save
+    const entry = { id: Date.now(), topic, niche, format, tone, lang, results, date: new Date().toLocaleDateString() };
+    saveToHistory(entry);
+    renderOutputs(results, topic);
+    goTab('outputs', document.querySelectorAll('.tab')[1]);
+
+  } catch(err) {
+    for(let i=1;i<=4;i++) {
+      if(document.getElementById('step'+i).classList.contains('active'))
+        setStep(i,'error','Error — tap to retry');
+    }
+    if(err.message !== 'No API key') alert('Error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ---- RENDER OUTPUT ----
+function renderOutputs(results, topic) {
+  const sections = [
+    {key:'titleHook', icon:'📌', label:'Titles + Hook'},
+    {key:'script',    icon:'📝', label:'Full Script'},
+    {key:'images',    icon:'🎨', label:'Image Prompts'},
+    {key:'metadata',  icon:'📊', label:'YouTube Metadata'}
+  ];
+  let html = `<div style="font-size:13px;color:var(--text3);margin:12px 4px 16px;letter-spacing:-0.2px;">Generated for: <strong style="color:var(--text)">${topic.slice(0,50)}${topic.length>50?'...':''}</strong></div>`;
+  sections.forEach(s => {
+    const id = 'out_' + s.key;
+    html += `
+    <div class="out-card">
+      <div class="out-header">
+        <div class="out-title">${s.icon} ${s.label}</div>
+        <div class="out-actions">
+          <button class="action-btn" onclick="doCopy('${id}',this)">Copy</button>
+        </div>
+      </div>
+      <div class="out-body" id="${id}">${escHtml(results[s.key]||'')}</div>
+      <div class="expand-row" onclick="toggleExpand('${id}',this)">Show More</div>
+    </div>`;
+  });
+  document.getElementById('outputsContainer').innerHTML = html;
+}
+
+function escHtml(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function toggleExpand(id, btn) {
+  const el = document.getElementById(id);
+  const exp = el.classList.toggle('expanded');
+  btn.textContent = exp ? 'Show Less' : 'Show More';
+}
+function doCopy(id, btn) {
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ---- HISTORY ----
+function saveToHistory(entry) {
+  const h = getHistory();
+  h.unshift(entry);
+  if (h.length > 20) h.pop();
+  localStorage.setItem('pp_history', JSON.stringify(h));
+  renderHistory();
+  updateCount();
+}
+function getHistory() { try { return JSON.parse(localStorage.getItem('pp_history')||'[]'); } catch { return []; } }
+function renderHistory() {
+  const h = getHistory();
+  if (!h.length) {
+    document.getElementById('historyContainer').innerHTML = '<div class="empty"><div class="empty-icon">📂</div><div class="empty-title">No History</div><div class="empty-sub">Generated pipelines appear here</div></div>';
+    return;
+  }
+  document.getElementById('historyContainer').innerHTML = h.map((e,i) => `
+    <div class="history-card" onclick="loadHistory(${i})">
+      <div class="history-icon">🎬</div>
+      <div class="history-info">
+        <div class="history-topic">${e.topic.slice(0,45)}${e.topic.length>45?'...':''}</div>
+        <div class="history-meta">${e.niche} · ${e.format} · ${e.date}</div>
+      </div>
+      <button class="history-del" onclick="event.stopPropagation();delHistory(${i})">×</button>
+    </div>`).join('');
+}
+function loadHistory(i) {
+  const e = getHistory()[i];
+  if (!e) return;
+  renderOutputs(e.results, e.topic);
+  goTab('outputs', document.querySelectorAll('.tab')[1]);
+}
+function delHistory(i) {
+  const h = getHistory();
+  h.splice(i, 1);
+  localStorage.setItem('pp_history', JSON.stringify(h));
+  renderHistory();
+  updateCount();
+}
+function clearAll() {
+  if (!confirm('Clear all saved pipelines?')) return;
+  localStorage.removeItem('pp_history');
+  renderHistory();
+  updateCount();
+}
+function updateCount() {
+  document.getElementById('savedCountText').textContent = getHistory().length + ' pipelines';
+}
+
+// ---- INIT ----
+window.addEventListener('load', () => {
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+  updateKeyUI();
+  renderHistory();
+  updateCount();
+  if (!getKey()) showModal();
+});
+</script>
+</body>
+</html>
